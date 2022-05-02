@@ -1,0 +1,60 @@
+Make /N=(numpnts(wave0)) CMFRed, CMFGreen, CMFBlue
+	CMFRed    =1.065*exp(-(1/2)*((wave0-595.8)/33.33)^2)+0.366*exp(-(1/2)*((wave0-446.8)/19.44)^2)
+	CMFGreen=1.014*exp(-(1/2)*((ln(wave0)-ln(556.3))/0.075)^2)
+	CMFBlue   =1.839*exp(-(1/2)*((ln(wave0)-ln(449.8))/0.051)^2)
+AppendToTable CMFRed, CMFGreen, CMFBlue
+
+Make /N=(numpnts(wave0)) weRed, weGreen, weBlue
+	weRed   =wave1*CMFRed
+	weGreen=wave1*CMFGreen
+	weBlue   =wave1*CMFBlue
+AppendToTable weRed, weGreen, weBlue
+
+Variable SRed    =AreaXY(wave0, weRed)
+Variable SGreen=AreaXY(wave0, weGreen)
+Variable SBlue   =AreaXY(wave0, weBlue)
+Variable SAll      = SRed+SGreen+SBlue
+	
+Variable CoordinateX=SRed    /SAll
+Variable CoordinateY=SGreen/SAll
+Variable CoordinateZ=SBlue   /SAll
+
+Make /N=1 valueX, valueY
+	valueX[0]=CoordinateX
+	valueY[0]=CoordinateY
+	
+Display valueY vs valueX
+
+ModifyGraph mode=3, marker=8, rgb=(0,0,0), width=512, height=512, nticks=10, minor=1, nticks(bottom)=10,minor(bottom)=1, grid=2, gridRGB=(8738,8738,8738), standoff(left)=0, standoff(bottom)=0
+SetAxis Bottom 0,1
+SetAxis Left      0,1
+
+Make /N=2 StandardX1, StandardX2, StandardX3, StandardY1, StandardY2, StandardY3
+	StandardX1[0]=0.1666
+	StandardY1[0]=0.0089
+	StandardX1[1]=0.2738 
+	StandardY1[1]=0.7174
+
+	StandardX2[0]=0.2738
+	StandardY2[0]=0.7174
+	StandardX2[1]=0.7347
+	StandardY2[1]=0.2653
+
+	StandardX3[0]=0.1666
+	StandardY3[0]=0.0089
+	StandardX3[1]=0.7347
+	StandardY3[1]=0.2653
+
+Make /N=1 WhiteX, WhiteY
+	WhiteX[0]=0.3333
+	WhiteY[0]=0.3333
+
+AppendToGraph StandardY1 vs StandardX1
+AppendToGraph StandardY2 vs StandardX2
+AppendToGraph StandardY3 vs StandardX3
+AppendToGraph WhiteY vs WhiteX
+
+ModifyGraph rgb(StandardY1)=(0,0,0), rgb(StandardY2)=(0,0,0), rgb(StandardY3)=(0,0,0)
+ModifyGraph mode(WhiteY)=3,marker(WhiteY)=1, rgb=(0,0,0)
+
+print CoordinateX, CoordinateY
