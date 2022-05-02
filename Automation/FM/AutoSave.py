@@ -48,7 +48,7 @@ while True:
             pag.press('enter')
             pag.press('enter')
         
-            # wait saving the photo
+            # wait saving
             time.sleep(5)
 
             # delete the temporary image file
