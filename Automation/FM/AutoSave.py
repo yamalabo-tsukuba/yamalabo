@@ -32,7 +32,6 @@ while True:
         
             # take a photo
             pag.press('f8')
-
             time.sleep(1)
             
             # save the photo
