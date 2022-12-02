@@ -6,39 +6,38 @@ import numpy as np
 import io
 
 
-num_p = 10
-num_s = 0
+n_peaks = 10
+n_smooth = 0
 
 is_first_run = True
 intensity_list = [False for _ in range(100)]
-
 
 # get touples (wavelength, intensity, prominence) for each peak
 def get_peaks(wavelength, intensity):
     
     # get the peak indecies and prominence values
-    peak_data = sp.find_peaks(intensity) 
-    prominence_data = sp.peak_prominences(intensity, peak_data[0])
+    peak_idx = sp.find_peaks(intensity)[0]
+    prominence_value = sp.peak_prominences(intensity, peak_idx)[0]
     
     # make a list of 
-    peaks = [[wavelength[i], intensity[i], j] for i, j in zip(peak_data[0], prominence_data[0])]
+    peaks = [[wavelength[i], intensity[i], pr] for i, pr in zip(peak_idx, prominence_value)]
     
     # sort the list from high prominence to low prominence
-    peaks = [peaks[i] for i in np.argsort(-prominence_data[0])]
+    peaks = [peaks[i] for i in np.argsort(-prominence_value)]
 
     return(peaks)
 
 
 # re-plot the graph and update the list of found peaks
-def plot_peaks(wavelength, intensity, peaks_po, num_p):
+def plot_peaks(wavelength, intensity, peaks, num_p):
     plt.figure()
     plt.xlabel("Wavelength (nm)")
     plt.ylabel("Intensity")
     plt.plot(wavelength, intensity)
     
     # extract peaks with high prominence in number of num_p
-    peaks_x = [i[0] for i in peaks_po[:num_p]]
-    peaks_y = [i[1] for i in peaks_po[:num_p]]
+    peaks_x = [i[0] for i in peaks[:num_p]]
+    peaks_y = [i[1] for i in peaks[:num_p]]
     
     # put the marker at the peak points
     plt.plot(peaks_x, peaks_y, linestyle='None', marker='*')
@@ -65,17 +64,19 @@ def smooth_wave(wavelength, intensity):
 
     return(new_wavelength, new_intensity)
 
+
 # make a window
 layout = [[sg.Text('Input File'), sg.InputText(), sg.FileBrowse(), sg.Button('Run')],
-          [sg.Text(f'Find {num_p} peaks', key='find_number'),
+          [sg.Text(f'Find {n_peaks} peaks', key='find_number'),
            sg.Button('-', key='minus_peak'),
            sg.Button('+', key='plus_peak'),
-           sg.Text(f'Smoothed {num_s} times', key='smoothing_number'),
+           sg.Text(f'Smoothed {n_smooth} times', key='smoothing_number'),
            sg.Button('-', key='minus_smoothing'), sg.Button('+', key='plus_smoothing')],
           [sg.Image('', key='Graph')],
           [sg.Text('', key='Found Peaks')]]
 
 window = sg.Window("File Select", layout, size=(650,800))
+
 
 while True:
     event, values = window.read()
@@ -92,58 +93,58 @@ while True:
         # if not only_wave_data:
         f = f.replace('\n', '\t')
         f = f.split('\t')
-        wavelength = [float(w) for j, w in enumerate(f[19:-1]) if j%2==0]
-        intensity  = [float(i) for j, i in enumerate(f[19:-1]) if j%2==1]
+        wavelength = [float(w) for idx, w in enumerate(f[19:-1]) if idx%2==0]
+        intensity  = [float(i) for idx, i in enumerate(f[19:-1]) if idx%2==1]
         
         peaks = get_peaks(wavelength, intensity)
-        plot_peaks(wavelength, intensity, peaks, num_p)
+        plot_peaks(wavelength, intensity, peaks, n_peaks)
 
         is_first_run = False
-        intensity_list[num_s] = [wavelength, intensity]
+        intensity_list[n_smooth] = [wavelength, intensity]
 
         continue
 
 
     if event == 'plus_peak':
-        num_p += 1
-        window['find_number'].update(f'Find {num_p} Peaks')
-        plot_peaks(wavelength, intensity, peaks, num_p)
+        n_peaks += 1
+        window['find_number'].update(f'Find {n_peaks} Peaks')
+        plot_peaks(wavelength, intensity, peaks, n_peaks)
 
         continue
 
 
-    if event == 'minus_peak' and num_p > 0:
-        num_p -= 1
-        window['find_number'].update(f'Find {num_p} Peaks')
-        plot_peaks(wavelength, intensity, peaks, num_p)
+    if event == 'minus_peak' and n_peaks > 0:
+        n_peaks -= 1
+        window['find_number'].update(f'Find {n_peaks} Peaks')
+        plot_peaks(wavelength, intensity, peaks, n_peaks)
 
         continue
 
 
     if event == 'plus_smoothing':
-        num_s += 1
+        n_smooth += 1
 
-        if intensity_list[num_s] != False:
-            wavelength, intensity = intensity_list[num_s][0], intensity_list[num_s][1]
+        if intensity_list[n_smooth] != False:
+            wavelength, intensity = intensity_list[n_smooth][0], intensity_list[n_smooth][1]
         else:
             wavelength, intensity = smooth_wave(wavelength, intensity)
-            intensity_list[num_s] = [wavelength, intensity]
+            intensity_list[n_smooth] = [wavelength, intensity]
         
         peaks = get_peaks(wavelength, intensity)
         
-        plot_peaks(wavelength, intensity, peaks, num_p)
-        window['smoothing_number'].update(f'Smoothed {num_s} times')
+        plot_peaks(wavelength, intensity, peaks, n_peaks)
+        window['smoothing_number'].update(f'Smoothed {n_smooth} times')
 
         continue
 
 
-    if event == 'minus_smoothing' and num_s > 0:
-        num_s -= 1
-        wavelength, intensity = intensity_list[num_s][0], intensity_list[num_s][1]
+    if event == 'minus_smoothing' and n_smooth > 0:
+        n_smooth -= 1
+        wavelength, intensity = intensity_list[n_smooth][0], intensity_list[n_smooth][1]
         
         peaks = get_peaks(wavelength, intensity)
         
-        plot_peaks(wavelength, intensity, peaks, num_p)
-        window['smoothing_number'].update(f'Smoothed {num_s} times')
+        plot_peaks(wavelength, intensity, peaks, n_peaks)
+        window['smoothing_number'].update(f'Smoothed {n_smooth} times')
         
         continue
