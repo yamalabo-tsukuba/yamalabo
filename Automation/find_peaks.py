@@ -1,9 +1,9 @@
-import matplotlib.pyplot as plt
-import PySimpleGUI as sg
-import sys
-import scipy.signal as sp
-import numpy as np
 import io
+import sys
+import numpy as np
+import PySimpleGUI as sg
+import scipy.signal as sp
+import matplotlib.pyplot as plt
 
 
 n_peaks = 10
@@ -11,6 +11,7 @@ n_smooth = 0
 
 is_first_run = True
 intensity_list = [False for _ in range(100)]
+
 
 # get touples (wavelength, intensity, prominence) for each peak
 def get_peaks(wavelength, intensity):
