@@ -30,15 +30,15 @@ def get_peaks(wavelength, intensity):
 
 
 # re-plot the graph and update the list of found peaks
-def plot_peaks(wavelength, intensity, peaks, num_p):
+def plot_peaks(wavelength, intensity, peaks, n_peaks):
     plt.figure()
     plt.xlabel("Wavelength (nm)")
     plt.ylabel("Intensity")
     plt.plot(wavelength, intensity)
     
-    # extract peaks with high prominence in number of num_p
-    peaks_x = [i[0] for i in peaks[:num_p]]
-    peaks_y = [i[1] for i in peaks[:num_p]]
+    # extract peaks with high prominence in number of n_peaks
+    peaks_x = [i[0] for i in peaks[:n_peaks]]
+    peaks_y = [i[1] for i in peaks[:n_peaks]]
     
     # put the marker at the peak points
     plt.plot(peaks_x, peaks_y, linestyle='None', marker='*')
@@ -50,7 +50,7 @@ def plot_peaks(wavelength, intensity, peaks, num_p):
     
     # update the text
     found_peaks = ''
-    for i, j in enumerate(np.argsort(peaks_x[:num_p])):
+    for i, j in enumerate(np.argsort(peaks_x[:n_peaks])):
         found_peaks += f'{i+1} : '.zfill(5)
         found_peaks += f'{round(peaks_x[j], 2)}'.ljust(7, '0')
         found_peaks += ' nm\n'
